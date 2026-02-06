@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run python:*)",
+      "Bash(uv sync)",
+      "Bash(uv pip list)",
+      "Bash(uv pip show:*)",
+      "Bash(uv --version)",
+      "Bash(uv tree)",
+
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "Bash(ruff --version)",
+
+      "Bash(yt-dlp --version)"
+    ]
+  }
+}
