@@ -6,7 +6,7 @@ Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
-│ Video URL   │ ──▶ │   yt-dlp    │ ──▶ │    PyAV     │ ──▶ │ mlx-whisper │ ──▶ Transcript
+│  Video URL  │ ──▶ │   yt-dlp    │ ──▶ │    PyAV     │ ──▶ │  mlx-whisper │ ──▶ Transcript
 │  (any site) │     │  (download) │     │  (extract)  │     │ (transcribe) │
 └─────────────┘     └─────────────┘     └─────────────┘     └──────────────┘
 ```
@@ -28,58 +28,21 @@ Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram
 ## Installation
 
 ```bash
-uv sync
+uv tool install .
 ```
 
 ## Usage
 
-### Basic Usage
-
 ```bash
 # Works with any supported site
-uv run python transcriber.py "https://www.youtube.com/watch?v=..."
-uv run python transcriber.py "https://x.com/user/status/123456789"
-uv run python transcriber.py "https://www.tiktok.com/@user/video/..."
-```
+transcribe "https://www.youtube.com/watch?v=..."
+transcribe "https://x.com/user/status/123456789"
 
-### Pipe to Claude Code for Summarization
+# Options
+transcribe "URL" --whisper-model medium --language en --output transcript.txt
 
-Since you have Claude Pro, pipe the transcript directly to Claude Code:
-
-```bash
-# Summarize the video
-uv run python transcriber.py "URL" | claude -p "Summarize this video transcript"
-
-# Extract key points
-uv run python transcriber.py "URL" | claude -p "What are the main points?"
-
-# Translate
-uv run python transcriber.py "URL" | claude -p "Translate to Spanish"
-```
-
-**Note**: The `-p` flag runs Claude in non-interactive mode for piping.
-
-### Options
-
-```bash
-# Use a larger Whisper model for better accuracy
-uv run python transcriber.py "URL" --whisper-model medium
-
-# Specify language (faster transcription)
-uv run python transcriber.py "URL" --language en
-
-# Save transcript to file
-uv run python transcriber.py "URL" --output transcript.txt
-```
-
-### Create an Alias
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-alias transcribe="uv run --directory ~/path/to/transcriber python transcriber.py"
-
-# Then use it:
-transcribe "URL" | claude -p "Summarize this"
+# Copy transcript to clipboard, then paste into your favorite LLM
+transcribe "URL" | pbcopy
 ```
 
 ## Whisper Model Selection
@@ -127,14 +90,6 @@ transcript = process_url(
 
 print(transcript)
 ```
-
-## Alternatives
-
-If this pipeline doesn't work for your use case:
-
-- **Web-based**: [VMEG](https://vmeg.ai/tools/transcribe-twitter-video/)
-- **GUI**: [Tartube](https://github.com/axcore/tartube) (yt-dlp frontend)
-- **API**: [Supadata Twitter Transcript API](https://supadata.ai/twitter-transcript-api)
 
 ## Claude Code Integration
 

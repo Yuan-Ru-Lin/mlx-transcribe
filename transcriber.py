@@ -198,14 +198,14 @@ def main():
         epilog="""
 Examples:
     # Basic usage
-    uv run python transcriber.py "https://www.youtube.com/watch?v=..."
-    uv run python transcriber.py "https://x.com/user/status/123456789"
+    transcribe "https://www.youtube.com/watch?v=..."
+    transcribe "https://x.com/user/status/123456789"
 
     # With options
-    uv run python transcriber.py "URL" --whisper-model small --language en
+    transcribe "URL" --whisper-model small --language en
 
-    # Pipe to Claude Code for summarization (use -p flag)
-    uv run python transcriber.py "URL" | claude -p "Summarize this video transcript"
+    # Copy transcript to clipboard
+    transcribe "URL" | pbcopy
         """,
     )
 
