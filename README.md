@@ -1,12 +1,12 @@
 # Transcriber
 
-Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram, Vimeo, etc.) using faster-whisper.
+Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram, Vimeo, etc.) using mlx-whisper.
 
 ## Architecture
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
-│ Video URL   │ ──▶ │   yt-dlp    │ ──▶ │    PyAV     │ ──▶ │faster-whisper│ ──▶ Transcript
+│ Video URL   │ ──▶ │   yt-dlp    │ ──▶ │    PyAV     │ ──▶ │ mlx-whisper │ ──▶ Transcript
 │  (any site) │     │  (download) │     │  (extract)  │     │ (transcribe) │
 └─────────────┘     └─────────────┘     └─────────────┘     └──────────────┘
 ```
@@ -106,7 +106,6 @@ If yt-dlp can't download directly:
 ### Whisper is Slow
 
 - Use a smaller model: `--whisper-model tiny`
-- Install CUDA for GPU acceleration
 - Ensure you have enough RAM (large model needs ~10GB)
 
 ### No Audio in Video

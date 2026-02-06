@@ -22,82 +22,43 @@ Usage:
 
 import argparse
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 
-def check_dependencies():
-    """Check if required tools are installed."""
-    missing = []
-
-    # Check yt-dlp
-    try:
-        subprocess.run(["yt-dlp", "--version"], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        missing.append("yt-dlp (uv sync)")
-
-    # Check PyAV
-    try:
-        import av
-    except ImportError:
-        missing.append("av (uv sync)")
-
-    # Check mlx-whisper
-    try:
-        import mlx_whisper
-    except ImportError:
-        missing.append("mlx-whisper (uv sync)")
-
-    if missing:
-        print("Missing dependencies:", file=sys.stderr)
-        for dep in missing:
-            print(f"  - {dep}", file=sys.stderr)
-        if any(
-            dep.startswith(name)
-            for dep in missing
-            for name in ["yt-dlp", "av", "mlx-whisper"]
-        ):
-            sys.exit(1)
-
-
 def download_video(url: str, output_dir: str) -> str:
     """
-    Download video from X/Twitter using yt-dlp.
+    Download video using yt-dlp Python API.
 
     Args:
-        url: The X/Twitter post URL
+        url: Video URL from any supported site
         output_dir: Directory to save the video
 
     Returns:
         Path to the downloaded video file
     """
+    import yt_dlp
+
     output_template = os.path.join(output_dir, "video.%(ext)s")
 
-    cmd = [
-        "yt-dlp",
-        "--no-warnings",
-        "-f",
-        "best[ext=mp4]/best",  # Prefer mp4, fallback to best
-        "-o",
-        output_template,
-        "--no-playlist",
-        url,
-    ]
+    opts = {
+        "format": "best[ext=mp4]/best",
+        "outtmpl": output_template,
+        "noplaylist": True,
+        "no_warnings": True,
+    }
 
     print(f"Downloading video from: {url}", file=sys.stderr)
-    # Don't capture stderr so yt-dlp's progress bar is visible
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
 
-    if result.returncode != 0:
-        # Try alternative method with cookies if direct download fails
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            ydl.download([url])
+    except yt_dlp.utils.DownloadError:
         print("Direct download failed, trying with browser cookies...", file=sys.stderr)
-        cmd_with_cookies = cmd + ["--cookies-from-browser", "firefox"]
-        result = subprocess.run(cmd_with_cookies, stdout=subprocess.PIPE, text=True)
-
-        if result.returncode != 0:
-            raise RuntimeError("Failed to download video")
+        opts["cookiesfrombrowser"] = ("firefox",)
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            ydl.download([url])
 
     # Find the downloaded file
     for ext in ["mp4", "webm", "mkv", "mov"]:
@@ -265,18 +226,7 @@ Examples:
     parser.add_argument(
         "--output", "-o", default=None, help="Output file to save transcript"
     )
-    parser.add_argument(
-        "--check-deps", action="store_true", help="Check dependencies and exit"
-    )
-
     args = parser.parse_args()
-
-    # Check dependencies
-    check_dependencies()
-
-    if args.check_deps:
-        print("All required dependencies are installed!")
-        return
 
     # Ensure URL is provided
     if not args.url:
