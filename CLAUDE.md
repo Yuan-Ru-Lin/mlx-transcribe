@@ -11,25 +11,22 @@ All logic lives in `transcriber.py`. The entry point is `main()`, and the progra
 ## Commands
 
 ```bash
-# Install dependencies
-uv sync
+# Install as a global tool
+uv tool install .
 
-# Run transcription
-uv run python transcriber.py "URL"
-uv run python transcriber.py "URL" --whisper-model small --language en --output transcript.txt
+# Run transcription (default model: large-v3)
+transcribe "URL"
+transcribe "URL" --whisper-model small --language en --output transcript.txt
 
 # Lint and format
 ruff check transcriber.py
 ruff format transcriber.py
-
-# Check dependencies are installed
-uv run python transcriber.py --check-deps
 ```
 
 ## Architecture
 
 - `transcriber.py` — entire application in one file, four main functions:
-  - `download_video()` — calls yt-dlp as subprocess, falls back to browser cookies on failure
+  - `download_video()` — uses yt-dlp Python API, falls back to browser cookies on failure
   - `extract_audio()` — uses PyAV to extract and resample audio to 16kHz mono MP3
   - `transcribe_audio()` — runs mlx-whisper with Metal acceleration, model from `mlx-community/whisper-{model}-mlx`
   - `process_url()` — orchestrates the pipeline in a temp directory, optionally saves to file
@@ -39,7 +36,7 @@ uv run python transcriber.py --check-deps
 ## Key Dependencies
 
 - **mlx-whisper** — Apple Silicon only (Metal GPU). Not compatible with non-Apple hardware.
-- **yt-dlp** — invoked as a subprocess, not as a library
+- **yt-dlp** — used as a Python library (not subprocess)
 - **PyAV** — Python bindings to FFmpeg
 
 ## Claude Code Configuration
