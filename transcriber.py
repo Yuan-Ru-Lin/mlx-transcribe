@@ -47,6 +47,8 @@ def download_video(url: str, output_dir: str) -> str:
         "outtmpl": output_template,
         "noplaylist": True,
         "no_warnings": True,
+        # TODO: Remove syndication workaround when fixed: https://github.com/yt-dlp/yt-dlp/issues/15963
+        "extractor_args": {"twitter": {"api": ["syndication"]}},
     }
 
     print(f"Downloading video from: {url}", file=sys.stderr)
