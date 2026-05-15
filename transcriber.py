@@ -23,7 +23,6 @@ import argparse
 import os
 import sys
 import tempfile
-from pathlib import Path
 
 
 def download_video(url: str, output_dir: str) -> str:
