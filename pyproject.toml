@@ -1,6 +1,6 @@
 [project]
-name = "transcriber"
-version = "0.3.0"
+name = "mlx-transcribe"
+version = "0.4.0"
 description = "Fast transcription tool supporting 1700+ sites (YouTube, X/Twitter, TikTok, etc.)"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,7 +18,7 @@ dev = [
 ]
 
 [project.scripts]
-transcribe = "transcriber:main"
+transcribe = "mlx_transcribe:main"
 
 [build-system]
 requires = ["hatchling"]

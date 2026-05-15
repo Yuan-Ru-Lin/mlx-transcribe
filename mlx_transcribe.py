@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Transcriber
+mlx-transcribe
 
 Fast local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, etc.)
 
@@ -13,10 +13,10 @@ Requirements:
 
 Usage:
     # Basic usage
-    uv run python transcriber.py "https://www.youtube.com/watch?v=..."
+    uv run python mlx_transcribe.py "https://www.youtube.com/watch?v=..."
 
     # Pipe to Claude Code for summarization
-    uv run python transcriber.py "URL" | claude -p "Summarize this video transcript"
+    uv run python mlx_transcribe.py "URL" | claude -p "Summarize this video transcript"
 """
 
 import argparse

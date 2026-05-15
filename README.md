@@ -1,4 +1,4 @@
-# Transcriber
+# mlx-transcribe
 
 Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram, Vimeo, etc.) using mlx-whisper.
 
@@ -78,7 +78,7 @@ Some X posts are GIFs or silent videos. The script will still try to process the
 ## API Usage (Python)
 
 ```python
-from transcriber import process_url
+from mlx_transcribe import process_url
 
 # Returns transcript as a string
 transcript = process_url(

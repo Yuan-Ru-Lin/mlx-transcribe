@@ -401,6 +401,30 @@ wheels = [
 ]
 
 [[package]]
+name = "mlx-transcribe"
+version = "0.4.0"
+source = { editable = "." }
+dependencies = [
+    { name = "imageio-ffmpeg" },
+    { name = "mlx-whisper" },
+    { name = "yt-dlp" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "imageio-ffmpeg", specifier = ">=0.4.0" },
+    { name = "mlx-whisper", specifier = ">=0.4.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "yt-dlp", specifier = ">=2023.0.0" },
+]
+provides-extras = ["dev"]
+
+[[package]]
 name = "mlx-whisper"
 version = "0.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1108,30 +1132,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540, upload-time = "2024-11-24T20:12:19.698Z" },
 ]
-
-[[package]]
-name = "transcriber"
-version = "0.3.0"
-source = { editable = "." }
-dependencies = [
-    { name = "imageio-ffmpeg" },
-    { name = "mlx-whisper" },
-    { name = "yt-dlp" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "imageio-ffmpeg", specifier = ">=0.4.0" },
-    { name = "mlx-whisper", specifier = ">=0.4.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "yt-dlp", specifier = ">=2023.0.0" },
-]
-provides-extras = ["dev"]
 
 [[package]]
 name = "triton"

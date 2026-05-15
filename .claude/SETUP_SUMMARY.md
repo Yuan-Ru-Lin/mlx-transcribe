@@ -42,7 +42,7 @@
 }
 ```
 
-**What's here:** Tools specific to THIS transcriber project:
+**What's here:** Tools specific to THIS mlx-transcribe project:
 - `uv` - This project's package manager
 - `ruff` - This project's formatter
 - `yt-dlp` - This project's video downloader
