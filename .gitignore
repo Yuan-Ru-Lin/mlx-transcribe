@@ -46,6 +46,3 @@ Thumbs.db
 *.mp4
 *.wav
 transcript*.txt
-
-# uv
-uv.lock
