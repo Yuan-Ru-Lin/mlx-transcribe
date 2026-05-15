@@ -5,10 +5,10 @@ Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram
 ## Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌──────────────┐
-│  Video URL  │ ──▶ │   yt-dlp    │ ──▶ │    PyAV     │ ──▶ │  mlx-whisper │ ──▶ Transcript
-│  (any site) │     │  (download) │     │  (extract)  │     │ (transcribe) │
-└─────────────┘     └─────────────┘     └─────────────┘     └──────────────┘
+┌─────────────┐     ┌─────────────┐     ┌──────────────┐
+│  Video URL  │ ──▶ │   yt-dlp    │ ──▶ │  mlx-whisper │ ──▶ Transcript
+│  (any site) │     │  (download) │     │ (transcribe) │
+└─────────────┘     └─────────────┘     └──────────────┘
 ```
 
 **Apple Silicon Optimized**: mlx-whisper uses native Metal GPU acceleration on M-series chips.
@@ -18,12 +18,12 @@ Fast, local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, Instagram
 | Component | Purpose | Why It's Stable |
 |-----------|---------|-----------------|
 | **yt-dlp** | Video download | Active development, 1700+ site support, community maintained |
-| **PyAV** | Audio extraction | Python bindings to FFmpeg libraries, well-maintained |
 | **mlx-whisper** | Transcription | Native Metal GPU acceleration on Apple Silicon |
 
 ## Prerequisites
 
-- uv (Python package manager)
+- **Apple Silicon Mac** (M1/M2/M3/etc.) — mlx-whisper requires Metal; Intel Macs are not supported
+- **uv** ([install](https://docs.astral.sh/uv/getting-started/installation/)) — Python 3.11+ is installed automatically if you don't have it
 
 ## Installation
 

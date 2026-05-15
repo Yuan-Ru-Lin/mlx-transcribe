@@ -6,8 +6,7 @@ Fast local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, etc.)
 
 Pipeline:
 1. Downloads video using yt-dlp (supports 1700+ sites)
-2. Extracts audio using PyAV
-3. Transcribes using mlx-whisper (native Metal GPU on Apple Silicon)
+2. Transcribes using mlx-whisper (native Metal GPU on Apple Silicon)
 
 Requirements:
     uv sync  # Install all dependencies
@@ -72,80 +71,34 @@ def download_video(url: str, output_dir: str) -> str:
     raise RuntimeError("Video file not found after download")
 
 
-def extract_audio(video_path: str, output_dir: str) -> str:
-    """
-    Extract audio from video using PyAV.
-
-    Args:
-        video_path: Path to the video file
-        output_dir: Directory to save the audio
-
-    Returns:
-        Path to the extracted audio file
-    """
-    import av
-
-    audio_path = os.path.join(output_dir, "audio.mp3")
-
-    print("Extracting audio...", file=sys.stderr)
-
-    # Open input video
-    input_container = av.open(video_path)
-    audio_stream = next((s for s in input_container.streams if s.type == "audio"), None)
-
-    if not audio_stream:
-        raise RuntimeError("No audio stream found in video")
-
-    # Resample audio to 16kHz mono first
-    resampler = av.audio.resampler.AudioResampler(
-        format="s16", layout="mono", rate=16000
-    )
-
-    # Open output file
-    output_container = av.open(audio_path, "w")
-    output_stream = output_container.add_stream("mp3", rate=16000, layout="mono")
-
-    # Process audio frames
-    for frame in input_container.decode(audio_stream):
-        resampled_frames = resampler.resample(frame)
-        for resampled_frame in resampled_frames:
-            for packet in output_stream.encode(resampled_frame):
-                output_container.mux(packet)
-
-    # Flush remaining packets
-    for packet in output_stream.encode():
-        output_container.mux(packet)
-
-    # Close containers
-    input_container.close()
-    output_container.close()
-
-    print(f"Audio extracted: {audio_path}", file=sys.stderr)
-    return audio_path
-
-
 def transcribe_audio(
-    audio_path: str, model_name: str = "large-v3", language: str = None
+    media_path: str, model_name: str = "large-v3", language: str = None
 ) -> str:
     """
-    Transcribe audio using mlx-whisper (native Metal acceleration on Apple Silicon).
+    Transcribe media using mlx-whisper (native Metal acceleration on Apple Silicon).
 
     Args:
-        audio_path: Path to the audio file
+        media_path: Path to the media file (any container ffmpeg can read)
         model_name: Whisper model size (tiny, base, small, medium, large, large-v3)
         language: Language code (e.g., 'en', 'zh') or None for auto-detect
 
     Returns:
         Transcribed text
     """
+    import imageio_ffmpeg
     import mlx_whisper
+
+    # mlx-whisper shells out to the "ffmpeg" CLI; ensure the bundled binary is on PATH.
+    ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
+    if ffmpeg_dir not in os.environ.get("PATH", "").split(os.pathsep):
+        os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
 
     print(f"Loading Whisper model: {model_name}", file=sys.stderr)
     print("Transcribing audio (using Metal GPU)...", file=sys.stderr)
 
     # mlx-whisper uses Metal acceleration automatically on Apple Silicon
     result = mlx_whisper.transcribe(
-        audio_path,
+        media_path,
         path_or_hf_repo=f"mlx-community/whisper-{model_name}-mlx",
         language=language,
         verbose=False,
@@ -166,10 +119,10 @@ def process_url(
     output_file: str = None,
 ) -> str:
     """
-    Complete pipeline: download → extract → transcribe.
+    Complete pipeline: download → transcribe.
 
     Args:
-        url: X/Twitter video URL
+        url: Video URL from any supported site
         whisper_model: Whisper model size
         language: Language code or None for auto-detect
         output_file: Optional file to save transcript
@@ -181,11 +134,8 @@ def process_url(
         # Step 1: Download video
         video_path = download_video(url, temp_dir)
 
-        # Step 2: Extract audio
-        audio_path = extract_audio(video_path, temp_dir)
-
-        # Step 3: Transcribe
-        transcript = transcribe_audio(audio_path, whisper_model, language)
+        # Step 2: Transcribe (mlx-whisper handles audio decode internally via ffmpeg)
+        transcript = transcribe_audio(video_path, whisper_model, language)
 
         # Save to file if requested
         if output_file:

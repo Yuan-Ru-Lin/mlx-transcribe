@@ -9,7 +9,7 @@ license = { text = "MIT" }
 dependencies = [
     "yt-dlp>=2023.0.0",
     "mlx-whisper>=0.4.0",
-    "av>=10.0.0",
+    "imageio-ffmpeg>=0.4.0",
 ]
 
 [project.optional-dependencies]
