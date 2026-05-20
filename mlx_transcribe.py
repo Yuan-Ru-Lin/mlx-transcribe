@@ -25,6 +25,30 @@ import sys
 import tempfile
 
 
+def _ensure_ffmpeg_on_path() -> None:
+    """Expose imageio-ffmpeg's bundled binary on PATH under the name 'ffmpeg'.
+
+    imageio-ffmpeg ships its binary with a versioned filename like
+    'ffmpeg-macos-aarch64-v7.1'. mlx-whisper and yt-dlp call
+    subprocess(['ffmpeg', ...]), which needs a file named exactly 'ffmpeg' on
+    PATH. We create a symlink shim in a stable per-user temp directory.
+    """
+    import imageio_ffmpeg
+
+    bundled = imageio_ffmpeg.get_ffmpeg_exe()
+    shim_dir = os.path.join(
+        tempfile.gettempdir(), f"mlx-transcribe-ffmpeg-{os.getuid()}"
+    )
+    os.makedirs(shim_dir, exist_ok=True)
+    shim = os.path.join(shim_dir, "ffmpeg")
+    if not (os.path.islink(shim) and os.readlink(shim) == bundled):
+        if os.path.lexists(shim):
+            os.remove(shim)
+        os.symlink(bundled, shim)
+    if shim_dir not in os.environ.get("PATH", "").split(os.pathsep):
+        os.environ["PATH"] = shim_dir + os.pathsep + os.environ.get("PATH", "")
+
+
 def download_video(url: str, output_dir: str) -> str:
     """
     Download video using yt-dlp Python API.
@@ -86,13 +110,9 @@ def transcribe_audio(
     """
     import subprocess
 
-    import imageio_ffmpeg
     import mlx_whisper
 
-    # mlx-whisper shells out to the "ffmpeg" CLI; ensure the bundled binary is on PATH.
-    ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
-    if ffmpeg_dir not in os.environ.get("PATH", "").split(os.pathsep):
-        os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+    _ensure_ffmpeg_on_path()
 
     # Fail fast on silent inputs so we don't load a 3GB model just to crash later.
     probe = subprocess.run(
