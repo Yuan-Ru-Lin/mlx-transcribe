@@ -84,6 +84,8 @@ def transcribe_audio(
     Returns:
         Transcribed text
     """
+    import subprocess
+
     import imageio_ffmpeg
     import mlx_whisper
 
@@ -91,6 +93,21 @@ def transcribe_audio(
     ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
     if ffmpeg_dir not in os.environ.get("PATH", "").split(os.pathsep):
         os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+
+    # Fail fast on silent inputs so we don't load a 3GB model just to crash later.
+    probe = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-i", media_path],
+        capture_output=True,
+        text=True,
+    )
+    has_audio = any(
+        "Stream #" in line and "Audio:" in line for line in probe.stderr.splitlines()
+    )
+    if not has_audio:
+        raise RuntimeError(
+            f"No audio stream found in '{os.path.basename(media_path)}'. "
+            "The source has no audio to transcribe."
+        )
 
     print(f"Loading Whisper model: {model_name}", file=sys.stderr)
     print("Transcribing audio (using Metal GPU)...", file=sys.stderr)
