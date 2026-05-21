@@ -95,7 +95,7 @@ def download_video(url: str, output_dir: str) -> str:
 
 
 def transcribe_audio(
-    media_path: str, model_name: str = "large-v3", language: str = None
+    media_path: str, model_name: str = "small", language: str = None
 ) -> str:
     """
     Transcribe media using mlx-whisper (native Metal acceleration on Apple Silicon).
@@ -150,7 +150,7 @@ def transcribe_audio(
 
 def process_url(
     url: str,
-    whisper_model: str = "large-v3",
+    whisper_model: str = "small",
     language: str = None,
     output_file: str = None,
 ) -> str:
@@ -204,9 +204,9 @@ Examples:
     parser.add_argument(
         "--whisper-model",
         "-m",
-        default="large-v3",
+        default="small",
         choices=["tiny", "base", "small", "medium", "large", "large-v3"],
-        help="Whisper model size (default: large-v3)",
+        help="Whisper model size (default: small)",
     )
     parser.add_argument(
         "--language",

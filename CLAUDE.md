@@ -14,7 +14,7 @@ All logic lives in `mlx_transcribe.py`. The entry point is `main()`, and the pro
 # Install as a global tool
 uv tool install .
 
-# Run transcription (default model: large-v3)
+# Run transcription (default model: small)
 transcribe "URL"
 transcribe "URL" --whisper-model small --language en --output transcript.txt
 

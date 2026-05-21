@@ -51,10 +51,10 @@ transcribe "URL" | pbcopy
 |-------|------|-------|----------|----------|
 | `tiny` | 39M | Fastest | Lower | Quick drafts |
 | `base` | 74M | Fast | Good | Balanced |
-| `small` | 244M | Medium | Better | Most videos |
+| `small` | 244M | Medium | Better | **Default**, most videos |
 | `medium` | 769M | Slow | High | Important content |
 | `large` | 1.5G | Slowest | Highest | Critical accuracy |
-| `large-v3` | 1.5G | Slowest | Best | **Default**, latest model, best accuracy |
+| `large-v3` | 1.5G | Slowest | Best | Latest model, best accuracy |
 
 ## Troubleshooting
 
@@ -83,7 +83,7 @@ from mlx_transcribe import process_url
 # Returns transcript as a string
 transcript = process_url(
     url="https://www.youtube.com/watch?v=...",
-    whisper_model="large-v3",
+    whisper_model="small",
     language="en",
     output_file=None  # Optional: save to file
 )
