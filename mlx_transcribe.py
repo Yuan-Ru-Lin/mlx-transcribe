@@ -49,6 +49,15 @@ def _ensure_ffmpeg_on_path() -> None:
         os.environ["PATH"] = shim_dir + os.pathsep + os.environ.get("PATH", "")
 
 
+def _format_timestamp(seconds: float) -> str:
+    """Format seconds as MM:SS, or H:MM:SS for media over an hour."""
+    minutes, secs = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes:02d}:{secs:02d}"
+
+
 def download_video(url: str, output_dir: str) -> str:
     """
     Download video using yt-dlp Python API.
@@ -95,7 +104,10 @@ def download_video(url: str, output_dir: str) -> str:
 
 
 def transcribe_audio(
-    media_path: str, model_name: str = "small", language: str = None
+    media_path: str,
+    model_name: str = "small",
+    language: str = None,
+    timestamps: bool = False,
 ) -> str:
     """
     Transcribe media using mlx-whisper (native Metal acceleration on Apple Silicon).
@@ -104,6 +116,7 @@ def transcribe_audio(
         media_path: Path to the media file (any container ffmpeg can read)
         model_name: Whisper model size (tiny, base, small, medium, large, large-v3)
         language: Language code (e.g., 'en', 'zh') or None for auto-detect
+        timestamps: Prefix each segment with its start time, one segment per line
 
     Returns:
         Transcribed text
@@ -140,7 +153,13 @@ def transcribe_audio(
         verbose=False,
     )
 
-    transcript = result["text"].strip()
+    if timestamps:
+        transcript = "\n".join(
+            f"[{_format_timestamp(seg['start'])}] {seg['text'].strip()}"
+            for seg in result["segments"]
+        )
+    else:
+        transcript = result["text"].strip()
     detected_lang = result.get("language", "unknown")
     print(f"Detected language: {detected_lang}", file=sys.stderr)
     print(f"Transcription complete ({len(transcript)} characters)", file=sys.stderr)
@@ -153,6 +172,7 @@ def process_url(
     whisper_model: str = "small",
     language: str = None,
     output_file: str = None,
+    timestamps: bool = False,
 ) -> str:
     """
     Complete pipeline: download → transcribe.
@@ -162,6 +182,7 @@ def process_url(
         whisper_model: Whisper model size
         language: Language code or None for auto-detect
         output_file: Optional file to save transcript
+        timestamps: Prefix each segment with its start time, one segment per line
 
     Returns:
         Transcribed text
@@ -171,7 +192,7 @@ def process_url(
         video_path = download_video(url, temp_dir)
 
         # Step 2: Transcribe (mlx-whisper handles audio decode internally via ffmpeg)
-        transcript = transcribe_audio(video_path, whisper_model, language)
+        transcript = transcribe_audio(video_path, whisper_model, language, timestamps)
 
         # Save to file if requested
         if output_file:
@@ -195,6 +216,9 @@ Examples:
     # With options
     transcribe "URL" --whisper-model small --language en
 
+    # With per-segment timestamps
+    transcribe "URL" --timestamps
+
     # Copy transcript to clipboard
     transcribe "URL" | pbcopy
         """,
@@ -217,6 +241,12 @@ Examples:
     parser.add_argument(
         "--output", "-o", default=None, help="Output file to save transcript"
     )
+    parser.add_argument(
+        "--timestamps",
+        "-t",
+        action="store_true",
+        help="Prefix each segment with its start time, e.g. [01:23]",
+    )
     args = parser.parse_args()
 
     # Ensure URL is provided
@@ -229,6 +259,7 @@ Examples:
         whisper_model=args.whisper_model,
         language=args.language,
         output_file=args.output,
+        timestamps=args.timestamps,
     )
 
     # Print transcript to stdout (pipe-friendly)
