@@ -1,5 +1,15 @@
 # Lessons
 
+## Release checklist
+
+Every version bump follows this order — no steps skipped:
+
+1. Bump `version` in `pyproject.toml` (before reinstalling; see below)
+2. `uv tool install . --force`
+3. Commit changes, then a separate "Bump to vX.Y.Z" commit
+4. Tag the bump commit: `git tag vX.Y.Z` (lightweight, matching existing tags)
+5. `git push && git push origin vX.Y.Z`
+
 ## Bump the version before reinstalling the tool
 
 uv caches built wheels by version. Running `uv tool install . --force` after
