@@ -20,6 +20,7 @@ Usage:
 """
 
 import argparse
+import contextlib
 import os
 import sys
 import tempfile
@@ -78,6 +79,8 @@ def download_video(url: str, output_dir: str) -> str:
         "outtmpl": output_template,
         "noplaylist": True,
         "no_warnings": True,
+        # Keep stdout reserved for the transcript; yt-dlp defaults to stdout
+        "logtostderr": True,
         # TODO: Remove syndication workaround when fixed: https://github.com/yt-dlp/yt-dlp/issues/15963
         "extractor_args": {"twitter": {"api": ["syndication"]}},
     }
@@ -145,13 +148,16 @@ def transcribe_audio(
     print(f"Loading Whisper model: {model_name}", file=sys.stderr)
     print("Transcribing audio (using Metal GPU)...", file=sys.stderr)
 
-    # mlx-whisper uses Metal acceleration automatically on Apple Silicon
-    result = mlx_whisper.transcribe(
-        media_path,
-        path_or_hf_repo=f"mlx-community/whisper-{model_name}-mlx",
-        language=language,
-        verbose=False,
-    )
+    # mlx-whisper uses Metal acceleration automatically on Apple Silicon.
+    # It prints status (e.g. detected language) to stdout even with
+    # verbose=False; redirect so stdout stays transcript-only.
+    with contextlib.redirect_stdout(sys.stderr):
+        result = mlx_whisper.transcribe(
+            media_path,
+            path_or_hf_repo=f"mlx-community/whisper-{model_name}-mlx",
+            language=language,
+            verbose=False,
+        )
 
     if timestamps:
         transcript = "\n".join(
