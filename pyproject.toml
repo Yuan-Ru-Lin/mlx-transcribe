@@ -1,13 +1,13 @@
 [project]
 name = "mlx-transcribe"
-version = "0.4.4"
+version = "0.4.5"
 description = "Fast transcription tool supporting 1700+ sites (YouTube, X/Twitter, TikTok, etc.)"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 
 dependencies = [
-    "yt-dlp>=2023.0.0",
+    "yt-dlp>=2026.7.4",
     "mlx-whisper>=0.4.0",
     "imageio-ffmpeg>=0.4.0",
 ]
