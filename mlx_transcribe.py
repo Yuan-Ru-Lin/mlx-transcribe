@@ -21,6 +21,7 @@ Usage:
 
 import argparse
 import contextlib
+import glob
 import os
 import sys
 import tempfile
@@ -75,7 +76,9 @@ def download_video(url: str, output_dir: str) -> str:
     output_template = os.path.join(output_dir, "video.%(ext)s")
 
     opts = {
-        "format": "best[ext=mp4]/best",
+        # Audio only: whisper never uses the video track, and YouTube no longer
+        # serves combined audio+video streams, so "best" alone fails there
+        "format": "bestaudio[ext=m4a]/bestaudio/best",
         "outtmpl": output_template,
         "noplaylist": True,
         "no_warnings": True,
@@ -96,14 +99,13 @@ def download_video(url: str, output_dir: str) -> str:
         with yt_dlp.YoutubeDL(opts) as ydl:
             ydl.download([url])
 
-    # Find the downloaded file
-    for ext in ["mp4", "webm", "mkv", "mov"]:
-        video_path = os.path.join(output_dir, f"video.{ext}")
-        if os.path.exists(video_path):
-            print(f"Downloaded: {video_path}", file=sys.stderr)
-            return video_path
-
-    raise RuntimeError("Video file not found after download")
+    # Find the downloaded file; the container depends on the site and format
+    matches = glob.glob(os.path.join(output_dir, "video.*"))
+    if not matches:
+        raise RuntimeError("Media file not found after download")
+    media_path = matches[0]
+    print(f"Downloaded: {media_path}", file=sys.stderr)
+    return media_path
 
 
 def transcribe_audio(
