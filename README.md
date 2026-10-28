@@ -38,6 +38,9 @@ uv tool install .
 transcribe "https://www.youtube.com/watch?v=..."
 transcribe "https://x.com/user/status/123456789"
 
+# Or with a media file already on disk (anything ffmpeg can read)
+transcribe recording.mp4
+
 # Options
 transcribe "URL" --whisper-model medium --language en --output transcript.txt
 
@@ -80,7 +83,7 @@ Some X posts are GIFs or silent videos. The script will still try to process the
 ```python
 from mlx_transcribe import process_url
 
-# Returns transcript as a string
+# Returns transcript as a string; url may also be a local file path
 transcript = process_url(
     url="https://www.youtube.com/watch?v=...",
     whisper_model="small",

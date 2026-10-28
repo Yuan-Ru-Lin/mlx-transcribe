@@ -3,9 +3,11 @@
 mlx-transcribe
 
 Fast local transcription for 1700+ sites (YouTube, X/Twitter, TikTok, etc.)
+and for media files already on disk.
 
 Pipeline:
-1. Downloads video using yt-dlp (supports 1700+ sites)
+1. Downloads video using yt-dlp (supports 1700+ sites), or skips this step
+   when given a path to a local media file
 2. Transcribes using mlx-whisper (native Metal GPU on Apple Silicon)
 
 Requirements:
@@ -14,6 +16,7 @@ Requirements:
 Usage:
     # Basic usage
     uv run python mlx_transcribe.py "https://www.youtube.com/watch?v=..."
+    uv run python mlx_transcribe.py recording.mp4
 
     # Pipe to Claude Code for summarization
     uv run python mlx_transcribe.py "URL" | claude -p "Summarize this video transcript"
@@ -186,7 +189,7 @@ def process_url(
     Complete pipeline: download → transcribe.
 
     Args:
-        url: Video URL from any supported site
+        url: Video URL from any supported site, or path to a local media file
         whisper_model: Whisper model size
         language: Language code or None for auto-detect
         output_file: Optional file to save transcript
@@ -196,11 +199,15 @@ def process_url(
         Transcribed text
     """
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Step 1: Download video
-        video_path = download_video(url, temp_dir)
+        # Step 1: Download video, unless we were handed a local file
+        if os.path.isfile(url):
+            media_path = url
+            print(f"Using local file: {media_path}", file=sys.stderr)
+        else:
+            media_path = download_video(url, temp_dir)
 
         # Step 2: Transcribe (mlx-whisper handles audio decode internally via ffmpeg)
-        transcript = transcribe_audio(video_path, whisper_model, language, timestamps)
+        transcript = transcribe_audio(media_path, whisper_model, language, timestamps)
 
         # Save to file if requested
         if output_file:
@@ -213,13 +220,14 @@ def process_url(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Transcribe videos from 1700+ sites (YouTube, X, TikTok, etc.)",
+        description="Transcribe videos from 1700+ sites (YouTube, X, TikTok, etc.) or local media files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
     # Basic usage
     transcribe "https://www.youtube.com/watch?v=..."
     transcribe "https://x.com/user/status/123456789"
+    transcribe recording.mp4
 
     # With options
     transcribe "URL" --whisper-model small --language en
@@ -232,7 +240,11 @@ Examples:
         """,
     )
 
-    parser.add_argument("url", nargs="?", help="Video URL from any supported site")
+    parser.add_argument(
+        "url",
+        nargs="?",
+        help="Video URL from any supported site, or a local media file",
+    )
     parser.add_argument(
         "--whisper-model",
         "-m",
@@ -257,11 +269,11 @@ Examples:
     )
     args = parser.parse_args()
 
-    # Ensure URL is provided
+    # Ensure a URL or file path is provided
     if not args.url:
         parser.error("the following arguments are required: url")
 
-    # Process the URL
+    # Process the URL or file
     transcript = process_url(
         url=args.url,
         whisper_model=args.whisper_model,
